@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="位置情報を取得して、指定した駅に近づいたらアラームが鳴るWebアプリ">
+  <meta name="theme-color" content="#2563eb">
+  <title>geo-station - 駅アラームアプリ</title>
+  <link rel="icon" type="image/x-icon" href="/geo-station/favicon.ico">
+  <link rel="apple-touch-icon" href="/geo-station/icon-192x192.png">
+  <link rel="manifest" href="/geo-station/manifest.webmanifest">
+</head>
+<body>
+  <div id="app">
+    <!-- ヘッダー -->
+    <header class="header">
+      <h1 class="app-title">📍 geo-station</h1>
+      <p class="app-subtitle">駅アラームアプリ</p>
+    </header>
+
+    <!-- ナビゲーション -->
+    <nav class="nav">
+      <button id="nav-home" class="nav-item active">🏠 ホーム</button>
+      <button id="nav-search" class="nav-item">🔍 検索</button>
+      <button id="nav-settings" class="nav-item">⚙️ 設定</button>
+    </nav>
+
+    <!-- ホーム画面 -->
+    <div id="home-view" class="view">
+      <section class="section">
+        <h2 class="section-title">現在地</h2>
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">緯度:</span>
+            <span id="current-lat" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">経度:</span>
+            <span id="current-lng" class="info-value">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">精度:</span>
+            <span id="current-accuracy" class="info-value">-</span> m
+          </div>
+        </div>
+        <button id="toggle-tracking" class="btn btn-primary">位置追跡を開始</button>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">アクティブなアラーム</h2>
+        <div id="alarm-list" class="alarm-list">
+          <div class="no-alarms">アクティブなアラームはありません</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 駅検索画面 -->
+    <div id="search-view" class="view hidden">
+      <section class="section">
+        <h2 class="section-title">駅を検索</h2>
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="station-search-input" 
+            class="search-input" 
+            placeholder="駅名を入力してください（例: 東京、新宿）"
+          >
+        </div>
+        <div id="search-results" class="search-results"></div>
+      </section>
+    </div>
+
+    <!-- アラーム設定画面 -->
+    <div id="alarm-setup" class="view hidden">
+      <section class="section">
+        <h2 class="section-title">アラーム設定</h2>
+        <div class="info-card">
+          <div class="station-display">
+            <div id="selected-station-name" class="station-display-name"></div>
+            <div id="selected-station-info" class="station-display-info"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="alarm-radius" class="form-label">通知距離（メートル）</label>
+          <input 
+            type="range" 
+            id="alarm-radius" 
+            class="form-range" 
+            min="100" 
+            max="5000" 
+            step="100" 
+            value="500"
+            oninput="document.getElementById('radius-value').textContent = this.value"
+          >
+          <div class="range-value">
+            <span id="radius-value">500</span> m
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="alarm-sound" class="form-label">アラーム音</label>
+          <select id="alarm-sound" class="form-select">
+            <option value="default">デフォルト</option>
+            <option value="bell">ベル</option>
+            <option value="chime">チャイム</option>
+          </select>
+        </div>
+
+        <div class="button-group">
+          <button id="save-alarm" class="btn btn-primary">保存</button>
+          <button id="cancel-alarm" class="btn btn-secondary">キャンセル</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 設定画面 -->
+    <div id="settings-view" class="view hidden">
+      <section class="section">
+        <h2 class="section-title">設定</h2>
+        
+        <div class="form-group">
+          <label for="setting-volume" class="form-label">音量</label>
+          <input 
+            type="range" 
+            id="setting-volume" 
+            class="form-range" 
+            min="0" 
+            max="1" 
+            step="0.1" 
+            value="0.7"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="setting-sound" class="form-label">デフォルトのアラーム音</label>
+          <select id="setting-sound" class="form-select">
+            <option value="default">デフォルト</option>
+            <option value="bell">ベル</option>
+            <option value="chime">チャイム</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="setting-interval" class="form-label">位置更新間隔（ミリ秒）</label>
+          <input 
+            type="number" 
+            id="setting-interval" 
+            class="form-input" 
+            value="5000" 
+            min="1000" 
+            step="1000"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="setting-radius" class="form-label">デフォルトの通知距離（メートル）</label>
+          <input 
+            type="number" 
+            id="setting-radius" 
+            class="form-input" 
+            value="500" 
+            min="100" 
+            step="100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="setting-theme" class="form-label">テーマ</label>
+          <select id="setting-theme" class="form-select">
+            <option value="light">ライト</option>
+            <option value="dark">ダーク</option>
+          </select>
+        </div>
+
+        <button id="save-settings" class="btn btn-primary">設定を保存</button>
+      </section>
+    </div>
+
+    <!-- フッター -->
+    <footer class="footer">
+      <p>© 2024 geo-station | MIT License</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
