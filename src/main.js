@@ -35,7 +35,8 @@ class GeoStationApp {
     const savedAlarms = await this.storageManager.loadAlarms();
     savedAlarms.forEach(alarm => {
       if (alarm.status === 'active') {
-        this.alarmManager.createAlarm(alarm.station, alarm.radius, alarm.soundType);
+        // 既存のIDを保持してアラームを復元
+        this.alarmManager.alarms.push(alarm);
       }
     });
     
@@ -98,9 +99,12 @@ class GeoStationApp {
     // 選択されたビューを表示
     document.getElementById(`${view}-view`).classList.remove('hidden');
     
-    // ナビゲーションの状態を更新
+    // ナビゲーションの状態を更新（存在する場合のみ）
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.getElementById(`nav-${view}`).classList.add('active');
+    const navItem = document.getElementById(`nav-${view}`);
+    if (navItem) {
+      navItem.classList.add('active');
+    }
   }
 
   /**

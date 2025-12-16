@@ -31,7 +31,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\.api\.*/i,
+            urlPattern: /^https:\/\/express\.heartrails\.com\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

@@ -226,6 +226,6 @@ export class AlarmManager {
    * @returns {string} ユニークID
    */
   generateId() {
-    return `alarm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `alarm_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   }
 }
